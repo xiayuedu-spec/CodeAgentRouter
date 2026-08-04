@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CodeAgentRouter</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="login-view" class="login-view hidden">
+    <div class="login-box">
+      <div class="login-brand">
+        <div class="logo-mark">R</div>
+        <div>
+          <div class="brand-title">CodeAgentRouter</div>
+          <div class="brand-sub">API 中转站</div>
+        </div>
+      </div>
+      <div class="seg" role="tablist">
+        <button class="seg-btn active" data-role="admin" type="button">管理员</button>
+        <button class="seg-btn" data-role="user" type="button">用户</button>
+      </div>
+      <form id="login-form" class="login-form">
+        <label>
+          <span>用户名</span>
+          <input id="login-username" autocomplete="username" required>
+        </label>
+        <label>
+          <span>密码</span>
+          <input id="login-password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">登录</button>
+      </form>
+      <p id="login-error" class="form-error"></p>
+    </div>
+  </div>
+
+  <div id="main-view" class="main-view hidden">
+    <aside class="sidebar">
+      <div class="login-brand compact">
+        <div class="logo-mark">R</div>
+        <div>
+          <div class="brand-title">CodeAgentRouter</div>
+          <div class="brand-sub">API 中转站</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav-admin">
+        <button class="nav-btn" data-view="users" type="button">用户</button>
+        <button class="nav-btn" data-view="pool" type="button">Key 池</button>
+        <button class="nav-btn" data-view="reports" type="button">月报</button>
+      </nav>
+      <nav class="nav" id="nav-user" hidden>
+        <button class="nav-btn" data-view="overview" type="button">概览</button>
+        <button class="nav-btn" data-view="mykeys" type="button">我的 Key</button>
+        <button class="nav-btn" data-view="myreports" type="button">我的月报</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div id="whoami" class="whoami"></div>
+        <button class="btn btn-ghost" id="logout-btn" type="button">退出</button>
+      </div>
+    </aside>
+    <main class="content">
+      <section id="view-users" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>用户</h1>
+            <p class="muted">账号、额度与用量</p>
+          </div>
+          <button class="btn btn-primary" id="btn-new-user" type="button">新建用户</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="users-table"></table>
+        </div>
+      </section>
+
+      <section id="view-pool" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>Key 池</h1>
+            <p class="muted">全部上游 Key 与实时用量</p>
+          </div>
+          <button class="btn" id="btn-refresh-pool" type="button">刷新</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="pool-table"></table>
+        </div>
+      </section>
+
+      <section id="view-reports" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>月报</h1>
+            <p class="muted">按用户、模型、天聚合</p>
+          </div>
+          <div class="head-actions">
+            <input id="report-month" class="input month-input" type="month" value="2026-08">
+            <button class="btn" id="btn-export-csv" type="button">导出 CSV</button>
+            <button class="btn btn-primary" id="btn-load-report" type="button">查询</button>
+          </div>
+        </div>
+        <div id="report-summary" class="stat-grid"></div>
+        <div class="table-wrap">
+          <table class="table" id="report-table"></table>
+        </div>
+      </section>
+
+      <section id="view-overview" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>概览</h1>
+            <p class="muted">我的账号与用量</p>
+          </div>
+        </div>
+        <div id="overview-content"></div>
+      </section>
+
+      <section id="view-mykeys" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>我的 Key</h1>
+            <p class="muted">上传或更换自己的上游 Key</p>
+          </div>
+          <button class="btn btn-primary" id="btn-new-mykey" type="button">添加 Key</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="mykeys-table"></table>
+        </div>
+      </section>
+
+      <section id="view-myreports" class="view hidden">
+        <div class="view-head">
+          <div>
+            <h1>我的月报</h1>
+            <p class="muted">本人请求明细汇总</p>
+          </div>
+          <div class="head-actions">
+            <input id="myreport-month" class="input month-input" type="month" value="2026-08">
+            <button class="btn btn-primary" id="btn-load-myreport" type="button">查询</button>
+          </div>
+        </div>
+        <div id="myreport-summary" class="stat-grid"></div>
+        <div class="table-wrap">
+          <table class="table" id="myreport-table"></table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

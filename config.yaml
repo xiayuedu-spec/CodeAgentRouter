@@ -1,0 +1,23 @@
+server:
+  addr: "0.0.0.0:8080"
+  timezone: "Asia/Shanghai"
+  working_hours:
+    - {start: 9, end: 12}
+    - {start: 14, end: 18}
+
+quota:
+  default_hourly_tokens: 10000000
+  default_daily_tokens: 400000000
+  per_minute_requests: 10
+
+security:
+  encrypt_key_env: "RELAY_ENCRYPT_KEY"
+  # Fallback used only when the env var above is unset (development).
+  encrypt_key: "change-this-dev-key"
+  admin_username: "admin"
+  admin_password_env: "RELAY_ADMIN_PASSWORD"
+  # Fallback used only when the env var above is unset (development).
+  admin_password: "admin123"
+
+logging:
+  dir: "logs"
