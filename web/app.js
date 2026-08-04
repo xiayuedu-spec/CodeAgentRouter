@@ -141,23 +141,30 @@ $("#login-form").addEventListener("submit", async (e) => {
   }
 });
 
-function enterApp() {
+async function enterApp() {
   const isAdmin = state.role === "admin";
   $("#nav-admin").hidden = !isAdmin;
   $("#nav-user").hidden = isAdmin;
-  if (isAdmin) {
-    state.userID = "";
-    localStorage.removeItem("relay_user_id");
-    $("#whoami").textContent = "管理员";
-    showView("users");
-  } else {
-    api("/user/me").then((me) => {
+  try {
+    if (isAdmin) {
+      await api("/admin/users");
+      state.userID = "";
+      localStorage.removeItem("relay_user_id");
+      $("#whoami").textContent = "管理员";
+      showView("users");
+    } else {
+      const me = await api("/user/me");
       state.userID = me.id;
       state.username = me.username;
       localStorage.setItem("relay_user_id", me.id);
       $("#whoami").textContent = me.username || me.id;
       showView("overview");
-    }).catch(() => showView("overview"));
+    }
+  } catch (err) {
+    if (state.token) {
+      toast(err.message || "无法连接服务器", true);
+      showView(isAdmin ? "users" : "overview");
+    }
   }
 }
 

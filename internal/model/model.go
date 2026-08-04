@@ -47,3 +47,11 @@ type UserCounters struct {
 	Hour WindowCounter `json:"hour"`
 	Day  WindowCounter `json:"day"`
 }
+
+// Session is a web console login session persisted with the state file so a
+// server restart does not invalidate browser sessions.
+type Session struct {
+	Role   string    `json:"role"`
+	UserID string    `json:"user_id,omitempty"`
+	Expiry time.Time `json:"expiry"`
+}

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"codeagentrouter/internal/model"
 )
 
 func newTestStore(t *testing.T) *Store {
@@ -119,5 +121,30 @@ func TestPersistenceRoundTrip(t *testing.T) {
 	plain, err := st2.DecryptAPIKey(keys[0])
 	if err != nil || plain != "sk-secret" {
 		t.Fatalf("decrypt = %q, err %v", plain, err)
+	}
+}
+
+func TestSessionPersistence(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	st, err := New(path, "test-encrypt-key", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expiry := time.Now().Add(time.Hour)
+	st.PutSession("tok123", model.Session{Role: "user", UserID: "u1", Expiry: expiry})
+	if err := st.Flush(); err != nil {
+		t.Fatal(err)
+	}
+	st2, err := New(path, "test-encrypt-key", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sess, ok := st2.GetSession("tok123")
+	if !ok || sess.Role != "user" || sess.UserID != "u1" {
+		t.Fatalf("session after reload = %+v, ok=%v", sess, ok)
+	}
+	st2.DeleteSession("tok123")
+	if _, ok := st2.GetSession("tok123"); ok {
+		t.Fatal("session should be deleted")
 	}
 }

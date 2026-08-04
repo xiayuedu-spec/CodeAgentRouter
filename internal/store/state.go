@@ -44,6 +44,7 @@ type State struct {
 	UpstreamKeys map[string]*model.UpstreamKey  `json:"upstream_keys"`
 	Counters     map[string]model.UserCounters  `json:"counters"`
 	KeyHours     map[string]model.WindowCounter `json:"key_hours"`
+	Sessions     map[string]model.Session       `json:"sessions"`
 	InFlight     map[string]int                 `json:"-"`
 }
 
@@ -55,6 +56,7 @@ func freshState() *State {
 		UpstreamKeys: map[string]*model.UpstreamKey{},
 		Counters:     map[string]model.UserCounters{},
 		KeyHours:     map[string]model.WindowCounter{},
+		Sessions:     map[string]model.Session{},
 		InFlight:     map[string]int{},
 	}
 }
@@ -99,6 +101,9 @@ func New(dataPath, encryptKey string, logf func(string, ...any)) (*Store, error)
 	}
 	if state.KeyHours == nil {
 		state.KeyHours = map[string]model.WindowCounter{}
+	}
+	if state.Sessions == nil {
+		state.Sessions = map[string]model.Session{}
 	}
 	if state.InFlight == nil {
 		state.InFlight = map[string]int{}
@@ -362,6 +367,32 @@ func (s *Store) UserByAccessKey(key string) (string, bool) {
 	defer s.mu.RUnlock()
 	uid, ok := s.state.AccessKeys[key]
 	return uid, ok
+}
+
+func (s *Store) GetSession(token string) (model.Session, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	sess, ok := s.state.Sessions[token]
+	return sess, ok
+}
+
+func (s *Store) PutSession(token string, sess model.Session) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.state.Sessions == nil {
+		s.state.Sessions = map[string]model.Session{}
+	}
+	s.state.Sessions[token] = sess
+	s.markDirtyLocked()
+}
+
+func (s *Store) DeleteSession(token string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.state.Sessions[token]; ok {
+		delete(s.state.Sessions, token)
+		s.markDirtyLocked()
+	}
 }
 
 func (s *Store) ListAccessKeys(userID string) []model.AccessKey {

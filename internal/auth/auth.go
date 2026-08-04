@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
+	"codeagentrouter/internal/model"
 	"codeagentrouter/internal/store"
 )
 
@@ -35,7 +35,6 @@ type Manager struct {
 	store     *store.Store
 	adminUser string
 	adminPass string
-	sessions  sync.Map // token -> *Session
 }
 
 func New(st *store.Store, adminUser, adminPass string) *Manager {
@@ -65,13 +64,14 @@ func (m *Manager) Check(token string) (*Session, error) {
 	if token == "" {
 		return nil, ErrUnauthorized
 	}
-	if v, ok := m.sessions.Load(token); ok {
-		s := v.(*Session)
-		if time.Now().Before(s.Expiry) {
-			return s, nil
-		}
-		m.sessions.Delete(token)
+	sess, ok := m.store.GetSession(token)
+	if !ok {
+		return nil, ErrUnauthorized
 	}
+	if time.Now().Before(sess.Expiry) {
+		return &Session{Role: sess.Role, UserID: sess.UserID, Expiry: sess.Expiry}, nil
+	}
+	m.store.DeleteSession(token)
 	return nil, ErrUnauthorized
 }
 
@@ -103,7 +103,11 @@ func (m *Manager) newSession(role, userID string) (string, error) {
 		return "", err
 	}
 	token := hex.EncodeToString(b)
-	m.sessions.Store(token, &Session{Role: role, UserID: userID, Expiry: time.Now().Add(sessionTTL)})
+	m.store.PutSession(token, model.Session{
+		Role:   role,
+		UserID: userID,
+		Expiry: time.Now().Add(sessionTTL),
+	})
 	return token, nil
 }
 
