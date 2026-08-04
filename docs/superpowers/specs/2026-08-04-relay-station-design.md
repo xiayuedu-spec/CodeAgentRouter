@@ -145,7 +145,7 @@ routeType       per-request                // own | pool
 
 `isWorkingHour(t)`：本地时间 `9 ≤ hour < 12` 或 `14 ≤ hour < 18`。
 - 工作时段内：小时额度 + 日额度同时检查。
-- 时段外：仅检查日额度，小时额度不拦截（但小时用量仍计入供工作时段首小时参考/报表）。
+- 时段外：仅检查日额度，小时额度不拦截（用量仍记录，供报表分析）。小时窗口按自然小时独立，不跨小时累计。
 
 ### 7.3 选 key 路由（动态共享池）
 
@@ -155,6 +155,7 @@ routeType       per-request                // own | pool
 3. 均不可用 → 429："本小时额度已用尽，HH:MM 后重试"
 ```
 
+- key 的合格阈值同样按每个 key 各自的小时上限（默认 1000 万，`default_hourly_tokens`），确保任一上游 key 不超过其上游侧限流。
 - key 的小时用量以 `keyHourCounters` 为准；工作时段外小时额度不生效，路由仍优先本人 key。
 - 路由结果记录 `route_type: own | pool`，写入请求日志。
 
